@@ -33,15 +33,15 @@ export default class VictoryTransition extends React.Component {
     this.setState({ nodesShouldLoad: true }); //eslint-disable-line react/no-did-mount-set-state
   }
 
-  componentWillReceiveProps(nextProps) {
+  componentWillUnmount() {
+    this.getTimer().stop();
+  }
+
+  UNSAFE_componentWillReceiveProps(nextProps) { // eslint-disable-line camelcase
     this.getTimer().bypassAnimation();
     this.setState(
       this.getTransitionState(this.props, nextProps), () => this.getTimer().resumeAnimation()
     );
-  }
-
-  componentWillUnmount() {
-    this.getTimer().stop();
   }
 
   getTimer() {

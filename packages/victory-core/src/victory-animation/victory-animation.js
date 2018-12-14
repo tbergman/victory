@@ -73,8 +73,16 @@ export default class VictoryAnimation extends React.Component {
     }
   }
 
+  componentWillUnmount() {
+    if (this.loopID) {
+      this.getTimer().unsubscribe(this.loopID);
+    } else {
+      this.getTimer().stop();
+    }
+  }
+
   /* lifecycle */
-  componentWillReceiveProps(nextProps) {
+  UNSAFE_componentWillReceiveProps(nextProps) { // eslint-disable-line camelcase
     /* cancel existing loop if it exists */
     this.getTimer().unsubscribe(this.loopID);
 
@@ -91,14 +99,6 @@ export default class VictoryAnimation extends React.Component {
     }
     /* Start traversing the tween queue */
     this.traverseQueue();
-  }
-
-  componentWillUnmount() {
-    if (this.loopID) {
-      this.getTimer().unsubscribe(this.loopID);
-    } else {
-      this.getTimer().stop();
-    }
   }
 
   getTimer() {

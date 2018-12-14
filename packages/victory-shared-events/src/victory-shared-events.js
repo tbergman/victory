@@ -81,12 +81,11 @@ export default class VictorySharedEvents extends React.Component {
     };
   }
 
-  componentWillReceiveProps(newProps) {
+  UNSAFE_componentWillReceiveProps(newProps) { // eslint-disable-line camelcase
     this.baseProps = this.getBaseProps(newProps);
     const externalMutations = this.getExternalMutations(newProps, this.baseProps);
     this.applyExternalMutations(newProps, externalMutations);
   }
-
 
   getTimer() {
     if (this.context.getTimer) {

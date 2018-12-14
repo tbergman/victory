@@ -63,11 +63,7 @@ export default class VictoryGroup extends React.Component {
     }
   }
 
-  componentWillMount() {
-    this.events = Wrapper.getAllEvents(this.props);
-  }
-
-  componentWillReceiveProps(nextProps) {
+  UNSAFE_componentWillReceiveProps(nextProps) { // eslint-disable-line camelcase
     if (this.props.animate) {
       this.setAnimationState(this.props, nextProps);
     }

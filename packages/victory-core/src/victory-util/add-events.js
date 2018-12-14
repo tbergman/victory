@@ -34,7 +34,7 @@ export default (WrappedComponent, options) => {
       }
     }
 
-    componentWillReceiveProps(nextProps) {
+    UNSAFE_componentWillReceiveProps(nextProps) { // eslint-disable-line camelcase
       this.cacheValues(this.getCalculatedValues(nextProps));
     }
 

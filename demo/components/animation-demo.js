@@ -19,7 +19,7 @@ export default class App extends React.Component {
     };
   }
 
-  componentWillMount() {
+  componentDidMount() {
     window.setInterval(() => {
       this.setState({
         data: this.getData(),

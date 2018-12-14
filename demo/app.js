@@ -86,7 +86,7 @@ class App extends React.Component {
     };
   }
 
-  componentWillMount() {
+  componentDidMount() {
     window.addEventListener("hashchange", () => {
       this.setState({
         route: window.location.hash.substr(1)
@@ -118,5 +118,3 @@ class App extends React.Component {
 }
 
 ReactDOM.render(<App/>, document.getElementById("content"));
-
-
