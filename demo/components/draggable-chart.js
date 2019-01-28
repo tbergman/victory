@@ -10,11 +10,6 @@ import { VictoryClipContainer } from "../../packages/victory-core/src/index";
 import { VictoryZoomContainer } from "../../packages/victory-zoom-container/src/index";
 import { VictoryBrushContainer } from "../../packages/victory-brush-container/src/index";
 
-const height = 400;
-const width = 800;
-const padding = { top: 50, left: 50, right: 0, bottom: 50 };
-
-
 class App extends React.Component {
   constructor() {
     super();
@@ -32,11 +27,6 @@ class App extends React.Component {
         { name: "DEN", date: new Date(2018, 3, 1) }
       ]
     };
-  }
-
-  getAxisOffset(index) {
-    const step = (height - padding.top - padding.bottom) / (this.state.bars.length - 1);
-    return step * index + padding.bottom;
   }
 
   handleZoom(domain) {
@@ -57,14 +47,19 @@ class App extends React.Component {
       alignItems: "center",
       justifyContent: "center"
     };
+
+    const sharedProps = {
+      width: 800,
+      domain: { x: [new Date(2012, 1, 1), new Date(2019, 1, 1)] },
+      scale: { x: "time" }
+    };
+
     return (
       <div style={containerStyle}>
         <VictoryChart
-          scale={{ x: "time" }}
-          domain={{ x: [new Date(2012, 1, 1), new Date(2019, 1, 1)], y: [1, 4] }}
-          height={height}
-          width={width}
-          padding={padding}
+          {...sharedProps}
+          height={400}
+          padding={{ top: 50, left: 50, right: 0, bottom: 50 }}
           containerComponent={
             <VictoryZoomContainer
               responsive={false}
@@ -88,17 +83,17 @@ class App extends React.Component {
 
           {this.state.bars.map((bar, index) => (
             <VictoryAxis
-              name={bar.name}
               key={index}
               axisComponent={
                 <VictoryBrushLine
                   name={bar.name}
                   width={20}
+                  allowDraw={false}
                   brushDomain={bar.range}
                   onBrushDomainChange={this.onDomainChange.bind(this)}
                 />
               }
-              offsetY={this.getAxisOffset(index)}
+              axisValue={bar.name}
               tickFormat={() => ""}
             />
           ))}
@@ -109,11 +104,9 @@ class App extends React.Component {
           />
         </VictoryChart>
         <VictoryChart
+          {...sharedProps}
           padding={{ top: 10, left: 50, right: 0, bottom: 30 }}
-          width={800}
           height={100}
-          scale={{ x: "time" }}
-          domain={{ x: [new Date(2012, 1, 1), new Date(2019, 1, 1)], y: [1, 4] }}
           containerComponent={
             <VictoryBrushContainer
               responsive={false}
