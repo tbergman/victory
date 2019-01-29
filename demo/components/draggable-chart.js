@@ -6,27 +6,77 @@ import { VictoryAxis } from "../../packages/victory-axis/src/index";
 import { VictoryBar } from "../../packages/victory-bar/src/index";
 import { VictoryBrushLine } from "../../packages/victory-brush-line/src/index";
 import { VictoryScatter } from "../../packages/victory-scatter/src/index";
-import { VictoryClipContainer } from "../../packages/victory-core/src/index";
+import { VictoryClipContainer, Point, Selection } from "../../packages/victory-core/src/index";
 import { VictoryZoomContainer } from "../../packages/victory-zoom-container/src/index";
 import { VictoryBrushContainer } from "../../packages/victory-brush-container/src/index";
+
+const bars = [
+  { name: "SEA", range: [new Date(2013, 1, 1), new Date(2019, 1, 1)] },
+  { name: "HKG", range: [new Date(2015, 1, 1), new Date(2015, 5, 1)] },
+  { name: "LHR", range: [new Date(2016, 5, 1), new Date(2019, 1, 1)] },
+  { name: "DEN", range: [new Date(2018, 8, 1), new Date(2019, 1, 1)] }
+];
+
+const points = [
+  { name: "SEA", date: new Date(2012, 9, 1) },
+  { name: "HKG", date: new Date(2014, 3, 1) },
+  { name: "LHR", date: new Date(2015, 6, 1) },
+  { name: "DEN", date: new Date(2018, 3, 1) }
+];
+
+class DraggablePoint extends React.Component {
+  static defaultEvents = [
+    {
+      target: "data",
+      eventHandlers: {
+        onMouseOver: (evt, targetProps) => {
+          return [{
+            mutation: () => Object.assign({}, targetProps, { active: true })
+          }]
+        },
+        onMouseDown: (evt, targetProps) => {
+          return [{
+            mutation: () => Object.assign({}, targetProps, { dragging: true })
+          }]
+        },
+        onMouseMove: (evt, targetProps) => {
+          const { scale, onPointChange, datum } = targetProps;
+          if (targetProps.dragging) {
+            const { x } = Selection.getSVGEventCoordinates(evt);
+            const point = scale.x.invert(x);
+            const name = datum.name;
+            onPointChange({ name, date: point })
+            return [{
+              mutation: () => Object.assign({}, targetProps, { x })
+            }]
+          }
+          return null;
+        },
+        onMouseUp: (evt, targetProps) => {
+          return [{
+            mutation: () => Object.assign({}, targetProps, { dragging: false, active: false })
+          }]
+        },
+        onMouseLeave: (evt, targetProps) => {
+          return [{
+            mutation: () => Object.assign({}, targetProps, { dragging: false, active: false })
+          }]
+        }
+      }
+    }
+  ];
+
+  render() {
+    return (
+      <Point {...this.props}/>
+    );
+  }
+}
 
 class App extends React.Component {
   constructor() {
     super();
-    this.state = {
-      bars: [
-        { name: "SEA", range: [new Date(2013, 1, 1), new Date(2019, 1, 1)] },
-        { name: "HKG", range: [new Date(2015, 1, 1), new Date(2015, 5, 1)] },
-        { name: "LHR", range: [new Date(2016, 5, 1), new Date(2019, 1, 1)] },
-        { name: "DEN", range: [new Date(2018, 8, 1), new Date(2019, 1, 1)] }
-      ],
-      points: [
-        { name: "SEA", date: new Date(2012, 9, 1) },
-        { name: "HKG", date: new Date(2014, 3, 1) },
-        { name: "LHR", date: new Date(2015, 6, 1) },
-        { name: "DEN", date: new Date(2018, 3, 1) }
-      ]
-    };
+    this.state = { bars, points };
   }
 
   handleZoom(domain) {
@@ -35,8 +85,15 @@ class App extends React.Component {
 
   onDomainChange(domain, props) {
     const { name } = props;
-    const bars = this.state.bars.map((bar) => bar.name === name ? { name, range: domain } : bar);
-    this.setState({ bars });
+    const newBars = this.state.bars.map((bar) => bar.name === name ? { name, range: domain } : bar);
+    this.setState({ bars: newBars });
+  }
+
+  onPointChange(point) {
+    const newPoints = this.state.points.map((p) => (
+      p.name === point.name ? point : p
+    ));
+    this.setState({ points: newPoints });
   }
 
   render() {
@@ -50,7 +107,7 @@ class App extends React.Component {
 
     const sharedProps = {
       width: 800,
-      domain: { x: [new Date(2012, 1, 1), new Date(2019, 1, 1)] },
+      domain: { x: [new Date(2012, 1, 1), new Date(2019, 1, 1)], y: [0.5, 4.5] },
       scale: { x: "time" }
     };
 
@@ -59,7 +116,7 @@ class App extends React.Component {
         <VictoryChart
           {...sharedProps}
           height={400}
-          padding={{ top: 50, left: 50, right: 0, bottom: 50 }}
+          padding={{ top: 50, left: 50, right: 0, bottom: 10 }}
           containerComponent={
             <VictoryZoomContainer
               responsive={false}
@@ -78,10 +135,10 @@ class App extends React.Component {
             style={{
               axis: { stroke: "none" }
             }}
-            tickValues={this.state.bars.map((b) => b.name)}
+            tickValues={bars.map((b) => b.name)}
           />
 
-          {this.state.bars.map((bar, index) => (
+          {bars.map((bar, index) => (
             <VictoryAxis
               key={index}
               axisComponent={
@@ -91,22 +148,44 @@ class App extends React.Component {
                   allowDraw={false}
                   brushDomain={bar.range}
                   onBrushDomainChange={this.onDomainChange.bind(this)}
+                  brushStyle={{
+                    fill: "skyBlue",
+                    opacity: (d, a) => (a ? 1 : 0.5),
+                  }}
                 />
               }
+              style={{
+                axis: { stroke: "none" }
+              }}
               axisValue={bar.name}
               tickFormat={() => ""}
             />
           ))}
           <VictoryScatter
-            data={this.state.points}
+            data={points}
+            dataComponent={
+              <DraggablePoint
+                onPointChange={this.onPointChange.bind(this)}
+              />
+            }
+            style={{
+              data: {
+                fill: "skyBlue",
+                opacity: (d, a) => (a ? 1 : 0.5),
+                cursor: "move"
+              }
+            }}
             x="date"
             y="name"
+            size={10}
           />
         </VictoryChart>
         <VictoryChart
+          horizontal
           {...sharedProps}
-          padding={{ top: 10, left: 50, right: 0, bottom: 30 }}
-          height={100}
+          padding={{ top: 30, left: 50, right: 0, bottom: 10 }}
+          scale={{ x: "time" }}
+          height={120}
           containerComponent={
             <VictoryBrushContainer
               responsive={false}
@@ -121,10 +200,17 @@ class App extends React.Component {
           />
           <VictoryScatter
             data={this.state.points}
+            size={5}
+            style={{
+              data: { fill: "skyBlue" }
+            }}
             x="date"
             y="name"
           />
           <VictoryBar horizontal
+            style={{
+                data: { fill: "skyBlue" }
+              }}
             data={this.state.bars}
             x="name"
             y={(d) => d.range[0]}
