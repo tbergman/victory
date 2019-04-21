@@ -108,14 +108,20 @@ export default class App extends React.Component {
                 tickLabels: { angle: 45 },
                 grid: { stroke: "#F4511E", strokeWidth: 2 }
               }}
+              tickLabelComponent={<VictoryLabel dy={20}/>}
               containerComponent={
                 <VictoryContainer
                   title="Time Scale Axis Example"
                 />
               }
+              // containerComponent={
+              //   <VictoryContainer
+              //     title="Time Scale Axis Example"
+              //   />
+              // }
               events={[
                 {
-                  target: "grid",
+                  target: "tickLabels",
                   eventHandlers: {
                     onClick: () => {
                       return [
