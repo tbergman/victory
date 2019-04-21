@@ -108,7 +108,7 @@ export default class App extends React.Component {
                 tickLabels: { angle: 45 },
                 grid: { stroke: "#F4511E", strokeWidth: 2 }
               }}
-              tickLabelComponent={<VictoryLabel dy={20}/>}
+              // tickLabelComponent={<VictoryLabel dy={20}/>}
               containerComponent={
                 <VictoryContainer
                   title="Time Scale Axis Example"
@@ -124,6 +124,7 @@ export default class App extends React.Component {
                   target: "tickLabels",
                   eventHandlers: {
                     onClick: () => {
+                      console.log('dispatch click to redux!')
                       return [
                         {
                           mutation: (props) => {
@@ -131,8 +132,16 @@ export default class App extends React.Component {
                           }
                         }, {
                           target: "tickLabels",
-                          mutation: () => {
-                            return { text: "hey" };
+                          mutation: (props) => {
+                            // console.log(props)
+                            return { text: "hey",style: merge({}, props.style, { stroke: "orange" }) };
+                          }
+                        },
+                        {
+                          target: "grid",
+                          mutation: (props) => {
+                            // console.log(props)
+                            return { style: merge({}, props.style, { stroke: "blue" }) };
                           }
                         }
                       ];
